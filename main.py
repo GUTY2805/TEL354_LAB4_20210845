@@ -9,14 +9,11 @@ CONTROLLER_IP = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1"
 REST_PORT = 8080
 PRIORITY = "32768"
  
-# Floodlight v1.2 usa /wm/staticflowpusher; versiones master usan /wm/staticentrypusher
 SFP_CANDIDATES = ["/wm/staticflowpusher", "/wm/staticentrypusher"]
 SFP_BASE = None
  
  
-# =====================================================================
-# Clases
-# =====================================================================
+
 class Student:
     _counter = 20260001
  
@@ -120,9 +117,7 @@ class Connection:
         return f"[{self.handler}] {self.student.name} -> {self.server.name} ({self.server.ip}) [{svcs}]"
  
  
-# =====================================================================
-# Datos globales
-# =====================================================================
+
 students, servers, courses, connections = [], [], [], []
  
  
@@ -171,9 +166,7 @@ def is_authorized(student, server, service):
     return any(student.name in c.students and c.allows(server.name, service.name) for c in courses)
  
  
-# =====================================================================
-# Floodlight REST
-# =====================================================================
+
 def base_url():
     return f"http://{CONTROLLER_IP}:{REST_PORT}"
  
@@ -249,7 +242,6 @@ def detect_sfp():
     return SFP_BASE
  
  
-# ---------- Insercion/borrado ASINCRONO de flows ----------
 def _post_flow(flow):
     r = requests.post(base_url() + detect_sfp() + "/json", data=json.dumps(flow), timeout=5)
     return flow["name"], r.status_code, r.text.strip()
@@ -272,11 +264,7 @@ def push_flows(flows):
  
 def delete_flows(names):
     return asyncio.run(_run_parallel(_delete_flow, names))
- 
- 
-# =====================================================================
-# build_route
-# =====================================================================
+
 def build_route(handler, hops, student, server, server_mac, services):
     """Genera los flow entries (L2+L3+L4, ida y vuelta + ARP) para cada switch de la ruta
     y los inserta asincronamente en el controlador."""
@@ -317,10 +305,7 @@ def build_route(handler, hops, student, server, server_mac, services):
             ok = False
     return [(f["switch"], f["name"]) for f in flows], ok
  
- 
-# =====================================================================
-# Helpers de UI
-# =====================================================================
+
 def ask(msg):
     return input(f"{msg}: ").strip()
  
@@ -333,7 +318,6 @@ def choose(title, options):
     return ask(">>>")
  
  
-# ---------------- Importar / Exportar ----------------
 def menu_importar():
     global students, servers, courses
     fn = ask("Nombre de archivo (ej. database.yaml)")
@@ -353,7 +337,6 @@ def menu_exportar():
         print(f"Error al exportar: {e}")
  
  
-# ---------------- Cursos ----------------
 def menu_cursos():
     while True:
         op = choose("CURSOS", ["Listar", "Mostrar detalles", "Gestionar alumnos"])
@@ -389,7 +372,6 @@ def menu_cursos():
             return
  
  
-# ---------------- Alumnos ----------------
 def menu_alumnos():
     while True:
         op = choose("ALUMNOS", ["Crear", "Listar", "Mostrar detalles"])
@@ -424,7 +406,6 @@ def menu_alumnos():
             return
  
  
-# ---------------- Servidores ----------------
 def menu_servidores():
     while True:
         op = choose("SERVIDORES", ["Listar", "Mostrar servicios"])
@@ -442,7 +423,6 @@ def menu_servidores():
             return
  
  
-# ---------------- Politicas ----------------
 def menu_politicas():
     while True:
         op = choose("POLITICAS", ["Cursos con acceso a un servicio de un servidor"])
@@ -460,7 +440,6 @@ def menu_politicas():
             return
  
  
-# ---------------- Conexiones ----------------
 def menu_conexiones():
     while True:
         op = choose("CONEXIONES", ["Crear", "Listar", "Mostrar detalles", "Borrar"])
@@ -533,9 +512,7 @@ def borrar_conexion():
     print(f"Conexion {h} eliminada.")
  
  
-# =====================================================================
 # Menu principal
-# =====================================================================
 def menu():
     print("\n" + "#" * 50)
     print("Network Policy manager de la UPSM")
